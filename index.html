@@ -25,17 +25,23 @@
         .logo { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 10px; }
         .logo i { color: var(--primary-color); font-size: 24px; }
         
+        /* Nút Mở khóa */
         .btn-unlock {
             background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%); color: #fff; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.3); transition: transform 0.2s;
         }
         .btn-unlock:hover { transform: scale(1.05); }
 
+        /* Nút Vào Drive (Hiện sau khi mở khóa) */
+        .btn-drive {
+            background: #28a745; color: #fff; padding: 8px 20px; border-radius: 20px; font-weight: bold; text-decoration: none; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+        }
+        .btn-drive:hover { background: #218838; }
+
         .container { display: flex; flex: 1; overflow: hidden; }
 
-        /* SIDEBAR (DANH SÁCH BÀI HỌC) */
+        /* SIDEBAR */
         .sidebar { width: var(--sidebar-width); border-right: 1px solid #ddd; display: flex; flex-direction: column; overflow-y: auto; background: #fff; }
         
-        /* Accordion Style */
         .unit-group { border-bottom: 1px solid #eee; }
         .unit-header {
             padding: 15px 20px; background: #f8f9fa; cursor: pointer; font-weight: 600; color: #444; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
@@ -45,26 +51,25 @@
         .unit-group.active .unit-header i { transform: rotate(180deg); }
         .unit-count { font-size: 12px; background: #ddd; padding: 2px 8px; border-radius: 10px; color: #555; }
 
-        .lesson-list { list-style: none; display: none; /* Mặc định ẩn */ }
-        .unit-group.active .lesson-list { display: block; /* Hiện khi active */ }
+        .lesson-list { list-style: none; display: none; }
+        .unit-group.active .lesson-list { display: block; }
 
         .lesson-item {
             padding: 12px 20px; border-bottom: 1px solid #f1f1f1; cursor: pointer; display: flex; align-items: center; gap: 10px; background: #fff; transition: 0.2s; font-size: 14px;
         }
         .lesson-item:hover { background: #f9f9f9; }
         .lesson-item.active { background: var(--active-bg); color: var(--primary-color); border-left: 3px solid var(--primary-color); font-weight: 500; }
-        
-        /* Style cho bài bị khóa */
         .lesson-item.locked { opacity: 0.7; color: #666; }
-        .lesson-item.locked:hover { background: #fff3cd; } /* Màu vàng nhạt cảnh báo */
+        .lesson-item.locked:hover { background: #fff3cd; }
 
         /* MAIN CONTENT */
         .main-content { flex: 1; padding: 30px; background: #fff; display: flex; flex-direction: column; align-items: center; position: relative; }
         
+        /* Iframe Video Container (Thay thế thẻ Video cũ) */
         .video-wrapper {
             width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
-        video { width: 100%; height: 100%; outline: none; }
+        iframe { width: 100%; height: 100%; border: none; }
         
         .placeholder {
             position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; background: #222; text-align: center;
@@ -73,7 +78,7 @@
         .info-area { width: 100%; max-width: 1000px; }
         .info-area h2 { font-size: 24px; margin-bottom: 10px; color: #333; }
 
-        /* POPUP MODAL (Thông báo mua hàng) */
+        /* POPUP MUA HÀNG */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center;
         }
@@ -84,7 +89,6 @@
         
         .modal i { font-size: 50px; color: #ff9800; margin-bottom: 15px; }
         .modal h3 { margin-bottom: 10px; color: #333; }
-        .modal p { color: #666; margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
         .btn-buy {
             display: inline-block; background: #0066cc; color: #fff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; width: 100%; margin-bottom: 10px;
         }
@@ -95,7 +99,7 @@
             .container { flex-direction: column; }
             .sidebar { width: 100%; height: auto; max-height: 400px; order: 2; border-right: none; border-top: 1px solid #ddd; }
             .main-content { order: 1; padding: 15px; }
-            .btn-unlock span { display: none; }
+            .btn-unlock span, .btn-drive span { display: none; }
         }
     </style>
 </head>
@@ -103,11 +107,16 @@
 
     <header>
         <div class="logo">
-            <i class="fas fa-graduation-cap"></i> <span id="headerTitle">Đang tải khóa học...</span>
+            <i class="fas fa-graduation-cap"></i> <span id="headerTitle">Đang tải...</span>
         </div>
-        <button class="btn-unlock" onclick="askPassword()">
+        
+        <button class="btn-unlock" id="btnUnlock" onclick="askPassword()">
             <i class="fas fa-key"></i> <span>Mở khóa toàn bộ</span>
         </button>
+
+        <a href="#" target="_blank" class="btn-drive" id="btnDrive">
+            <i class="fab fa-google-drive"></i> <span>VÀO HỌC (DRIVE)</span>
+        </a>
     </header>
 
     <div class="container">
@@ -117,7 +126,8 @@
 
         <div class="main-content">
             <div class="video-wrapper">
-                <video id="videoPlayer" controls controlsList="nodownload" style="display:none"></video>
+                <iframe id="videoPlayer" src="" allowfullscreen style="display:none"></iframe>
+                
                 <div class="placeholder" id="placeholder">
                     <i class="fas fa-play-circle" style="font-size: 50px; margin-bottom: 15px;"></i>
                     <p>Chọn bài học để bắt đầu</p>
@@ -126,7 +136,7 @@
 
             <div class="info-area">
                 <h2 id="lessonTitle">Chào mừng bạn</h2>
-                <p style="color:#666">Hãy chọn video từ danh sách <b>Học Thử</b> để trải nghiệm.</p>
+                <p id="lessonDesc" style="color:#666">Hãy chọn video từ danh sách <b>Học Thử</b> để trải nghiệm.</p>
             </div>
         </div>
     </div>
@@ -135,34 +145,49 @@
         <div class="modal">
             <i class="fas fa-lock"></i>
             <h3>Nội dung này bị khóa</h3>
-            <p>Để xem trọn bộ nội dung và tài liệu nâng cao, bạn vui lòng đăng ký khóa học chính thức.</p>
+            <p>Vui lòng đăng ký khóa học để xem trọn bộ nội dung và tài liệu.</p>
             <a href="https://khoahocmall.com/cua-hang/" target="_blank" class="btn-buy">ĐĂNG KÝ NGAY</a>
             <div class="btn-close" onclick="closeModal()">Đóng cửa sổ này</div>
         </div>
     </div>
 
     <script>
-        // --- 1. BẢO MẬT: CHẶN CHUỘT PHẢI, F12, COPY ---
+        // --- 1. BẢO MẬT ---
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if(e.keyCode == 123 || (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S'))) {
                 e.preventDefault(); return false;
             }
         });
+
+        // --- 2. CẤU HÌNH ---
+        // Dán Link Web App Apps Script của bạn vào đây
+        const API_URL = "https://script.google.com/macros/s/AKfycbyRq3NCms_WYOMzk6H8gejwjRvVxixl25I2W1lGGLcZivMZjMro4f81QTUY2DdVc7cuQQ/exec"; 
         
-        // --- 2. LOGIC ỨNG DỤNG ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbzFM8R_4F5iVPoJag_B04z5UMD82ksqVSSlSErIXkK5f2B3zFm1I5PPJd2q_8ULWbquRQ/exec"; 
         const urlParams = new URLSearchParams(window.location.search);
         const courseSlug = urlParams.get('course'); 
-
+        
+        // Biến lưu trữ data
         let courseData = { trial: [], locked: [] };
 
+        // --- 3. KHỞI TẠO ---
         window.onload = function() {
             if (!courseSlug) { alert("Thiếu mã khóa học (Slug)!"); return; }
-            loadData('getTrial');
+            
+            // TỰ ĐỘNG MỞ KHÓA NẾU ĐÃ NHỚ PASS
+            const savedPass = localStorage.getItem('savedPass_' + courseSlug);
+            
+            if (savedPass) {
+                // Nếu có pass lưu, gọi API mở khóa luôn
+                loadData('unlock', savedPass, true); // true = silent mode (không hiện thông báo popup)
+            } else {
+                // Nếu chưa có, chỉ load bản học thử
+                loadData('getTrial');
+            }
         };
 
-        async function loadData(action, password = '') {
+        // --- 4. HÀM TẢI DỮ LIỆU ---
+        async function loadData(action, password = '', isSilent = false) {
             try {
                 let url = `${API_URL}?course=${courseSlug}&action=${action}`;
                 if (password) url += `&pass=${password}`;
@@ -171,34 +196,59 @@
                 const data = await res.json();
 
                 if (data.error) {
-                    alert(data.error); return;
+                    if(!isSilent) alert(data.error); 
+                    // Nếu pass lưu bị sai (do đổi pass mới), xóa localStorage
+                    if(action === 'unlock') localStorage.removeItem('savedPass_' + courseSlug);
+                    return;
                 }
 
                 if (action === 'unlock') {
-                    // MỞ KHÓA THÀNH CÔNG -> REDIRECT
+                    // MỞ KHÓA THÀNH CÔNG
                     if(data.driveLink) {
-                        alert("Mật khẩu chính xác! Đang chuyển hướng đến thư mục Drive...");
-                        window.location.href = data.driveLink;
+                        // 1. Lưu pass vào bộ nhớ trình duyệt
+                        localStorage.setItem('savedPass_' + courseSlug, password);
+
+                        // 2. Hiện nút vào Drive, Ẩn nút Unlock
+                        document.getElementById('btnUnlock').style.display = 'none';
+                        const btnDrive = document.getElementById('btnDrive');
+                        btnDrive.style.display = 'flex';
+                        btnDrive.href = data.driveLink;
+
+                        // 3. Thông báo (chỉ hiện nếu người dùng vừa nhập tay)
+                        if(!isSilent) alert("Mật khẩu chính xác! Đã mở khóa quyền truy cập.");
+                        
+                        // 4. Load lại dữ liệu để cập nhật tên bài (nếu cần thiết)
+                        // Trong logic hiện tại, ta vẫn cần load list bài học để hiện danh sách bên trái
+                        // Gọi lại API getTrial để lấy tên bài (vì API unlock chỉ trả link Redirect)
+                        loadData('getTrial', '', true);
                     }
                 } else {
-                    // LOAD LIST BÀI HỌC
+                    // LOAD DANH SÁCH BÀI HỌC
                     if(data.name) document.getElementById('headerTitle').innerText = data.name;
-                    courseData.trial = data.trialItems;
-                    courseData.locked = data.lockedItems;
+                    
+                    // Sắp xếp A-Z
+                    courseData.trial = sortByName(data.trialItems);
+                    courseData.locked = sortByName(data.lockedItems);
+                    
                     renderSidebar();
                 }
 
-            } catch (e) { alert("Lỗi kết nối máy chủ."); }
+            } catch (e) { console.error(e); }
         }
 
+        // --- 5. HÀM SẮP XẾP A-Z ---
+        function sortByName(items) {
+            if(!items) return [];
+            return items.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        // --- 6. RENDER GIAO DIỆN ---
         function renderSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.innerHTML = '';
 
-            // Render Nhóm 1: Học Thử (Mở mặc định)
+            // Render 2 nhóm
             createGroup(sidebar, "1. Học Thử (Miễn Phí)", courseData.trial, true, false);
-
-            // Render Nhóm 2: Nội Dung Chính (Mặc định đóng hoặc mở tùy ý)
             createGroup(sidebar, "2. Nội Dung Chính (VIP)", courseData.locked, true, true);
         }
 
@@ -207,13 +257,11 @@
             group.className = 'unit-group';
             if(isOpen) group.classList.add('active');
 
-            // Header Nhóm (Accordion)
             const header = document.createElement('div');
             header.className = 'unit-header';
             header.innerHTML = `<span>${title}</span> <div><span class="unit-count">${items.length}</span> <i class="fas fa-chevron-down"></i></div>`;
             header.onclick = () => group.classList.toggle('active');
 
-            // Danh sách bài
             const list = document.createElement('ul');
             list.className = 'lesson-list';
 
@@ -230,48 +278,54 @@
                     
                     li.onclick = () => {
                         if(isLockedGroup) {
-                            // Nếu bấm vào bài khóa -> Hiện Modal mua hàng
                             showBuyModal();
                         } else {
-                            // Nếu bấm bài học thử -> Phát video
-                            playVideo(item.link, item.name, li);
+                            // Chuyển link download sang link preview cho Iframe
+                            const previewLink = convertToPreviewLink(item.link);
+                            playVideo(previewLink, item.name, li);
                         }
                     };
                     list.appendChild(li);
                 });
             }
-
             group.appendChild(header);
             group.appendChild(list);
             container.appendChild(group);
         }
 
+        // --- 7. HỖ TRỢ STREAM ---
+        function convertToPreviewLink(downloadLink) {
+            // Chuyển link: drive.google.com/uc?export=download&id=XYZ 
+            // Thành: drive.google.com/file/d/XYZ/preview
+            try {
+                const idMatch = downloadLink.match(/id=([^&]+)/);
+                if (idMatch && idMatch[1]) {
+                    return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+                }
+                return downloadLink;
+            } catch (e) { return downloadLink; }
+        }
+
         function playVideo(link, title, element) {
-            const player = document.getElementById('videoPlayer');
+            const iframe = document.getElementById('videoPlayer');
             const placeholder = document.getElementById('placeholder');
             
             placeholder.style.display = 'none';
-            player.style.display = 'block';
-            player.src = link;
-            player.play();
+            iframe.style.display = 'block';
+            iframe.src = link;
 
             document.getElementById('lessonTitle').innerText = title;
+            document.getElementById('lessonDesc').innerText = "Đang phát video...";
             
-            // Highlight bài đang xem
             document.querySelectorAll('.lesson-item').forEach(e => e.classList.remove('active'));
             element.classList.add('active');
         }
 
-        function showBuyModal() {
-            document.getElementById('buyModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('buyModal').style.display = 'none';
-        }
+        function showBuyModal() { document.getElementById('buyModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('buyModal').style.display = 'none'; }
 
         function askPassword() {
-            const pass = prompt("Nhập mật khẩu để truy cập Kho Tài Liệu Gốc trên Drive:");
+            const pass = prompt("Nhập mật khẩu để truy cập Kho Tài Liệu Gốc:");
             if(pass) loadData('unlock', pass);
         }
     </script>
