@@ -25,13 +25,11 @@
         .logo { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 10px; }
         .logo i { color: var(--primary-color); font-size: 24px; }
         
-        /* Nút Mở khóa */
         .btn-unlock {
             background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%); color: #fff; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.3); transition: transform 0.2s;
         }
         .btn-unlock:hover { transform: scale(1.05); }
 
-        /* Nút Vào Drive (Hiện sau khi mở khóa) */
         .btn-drive {
             background: #28a745; color: #fff; padding: 8px 20px; border-radius: 20px; font-weight: bold; text-decoration: none; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
         }
@@ -59,15 +57,17 @@
         }
         .lesson-item:hover { background: #f9f9f9; }
         .lesson-item.active { background: var(--active-bg); color: var(--primary-color); border-left: 3px solid var(--primary-color); font-weight: 500; }
-        .lesson-item.locked { opacity: 0.7; color: #666; }
-        .lesson-item.locked:hover { background: #fff3cd; }
+        
+        /* Style cho bài bị khóa */
+        .lesson-item.locked { opacity: 0.9; color: #444; font-weight: 500; }
+        .lesson-item.locked:hover { background: #fff8e1; }
+        .folder-icon { color: #ffa000; font-size: 16px; }
 
         /* MAIN CONTENT */
         .main-content { flex: 1; padding: 30px; background: #fff; display: flex; flex-direction: column; align-items: center; position: relative; }
         
-        /* Iframe Video Container (Thay thế thẻ Video cũ) */
         .video-wrapper {
-            width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         iframe { width: 100%; height: 100%; border: none; }
         
@@ -78,6 +78,16 @@
         .info-area { width: 100%; max-width: 1000px; }
         .info-area h2 { font-size: 24px; margin-bottom: 10px; color: #333; }
 
+        /* Nút Xem Trên Drive (Dưới video) */
+        .drive-actions {
+            width: 100%; max-width: 1000px; display: none; justify-content: flex-end; margin-bottom: 20px;
+        }
+        .btn-view-drive {
+            display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #fff; border: 1px solid #ddd; border-radius: 6px; color: #555; font-size: 13px; text-decoration: none; transition: 0.2s;
+        }
+        .btn-view-drive:hover { background: #f5f5f5; color: #333; border-color: #ccc; }
+        .btn-view-drive i { color: #28a745; }
+
         /* POPUP MUA HÀNG */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center;
@@ -87,12 +97,15 @@
         }
         @keyframes slideDown { from {transform: translateY(-20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
         
-        .modal i { font-size: 50px; color: #ff9800; margin-bottom: 15px; }
+        .modal i.main-icon { font-size: 50px; color: #ff9800; margin-bottom: 15px; }
         .modal h3 { margin-bottom: 10px; color: #333; }
+        .modal p { color: #666; margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
         .btn-buy {
-            display: inline-block; background: #0066cc; color: #fff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; width: 100%; margin-bottom: 10px;
+            display: inline-block; background: #0066cc; color: #fff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; width: 100%; margin-bottom: 15px;
         }
-        .btn-close { color: #999; cursor: pointer; font-size: 13px; text-decoration: underline; }
+        .modal-footer { border-top: 1px solid #eee; padding-top: 15px; font-size: 13px; }
+        .link-pass { color: #0066cc; cursor: pointer; font-weight: bold; }
+        .btn-close { position: absolute; top: 15px; right: 15px; color: #999; cursor: pointer; font-size: 20px; }
 
         /* Responsive */
         @media (max-width: 900px) {
@@ -110,12 +123,12 @@
             <i class="fas fa-graduation-cap"></i> <span id="headerTitle">Đang tải...</span>
         </div>
         
-        <button class="btn-unlock" id="btnUnlock" onclick="askPassword()">
-            <i class="fas fa-key"></i> <span>Mở khóa toàn bộ</span>
+        <button class="btn-unlock" id="btnUnlock" onclick="showBuyModal()">
+            <i class="fas fa-lock"></i> <span>Mở khóa nội dung</span>
         </button>
 
         <a href="#" target="_blank" class="btn-drive" id="btnDrive">
-            <i class="fab fa-google-drive"></i> <span>VÀO HỌC (DRIVE)</span>
+            <i class="fab fa-google-drive"></i> <span>VÀO KHO TÀI LIỆU GỐC</span>
         </a>
     </header>
 
@@ -127,27 +140,37 @@
         <div class="main-content">
             <div class="video-wrapper">
                 <iframe id="videoPlayer" src="" allowfullscreen style="display:none"></iframe>
-                
                 <div class="placeholder" id="placeholder">
                     <i class="fas fa-play-circle" style="font-size: 50px; margin-bottom: 15px;"></i>
-                    <p>Chọn bài học để bắt đầu</p>
+                    <p>Chọn video <b>Học Thử</b> để bắt đầu</p>
                 </div>
+            </div>
+
+            <div class="drive-actions" id="driveActions">
+                <a href="#" target="_blank" class="btn-view-drive" id="btnViewOnDrive">
+                    <i class="fab fa-google-drive"></i> Xem trên Drive
+                </a>
             </div>
 
             <div class="info-area">
                 <h2 id="lessonTitle">Chào mừng bạn</h2>
-                <p id="lessonDesc" style="color:#666">Hãy chọn video từ danh sách <b>Học Thử</b> để trải nghiệm.</p>
+                <p id="lessonDesc" style="color:#666">Hãy chọn video từ danh sách bên trái để trải nghiệm.</p>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="buyModal">
-        <div class="modal">
-            <i class="fas fa-lock"></i>
-            <h3>Nội dung này bị khóa</h3>
-            <p>Vui lòng đăng ký khóa học để xem trọn bộ nội dung và tài liệu.</p>
-            <a href="https://khoahocmall.com/cua-hang/" target="_blank" class="btn-buy">ĐĂNG KÝ NGAY</a>
-            <div class="btn-close" onclick="closeModal()">Đóng cửa sổ này</div>
+        <div class="modal" style="position: relative;">
+            <div class="btn-close" onclick="closeModal()">&times;</div>
+            <i class="fas fa-folder-open main-icon"></i>
+            <h3>Nội dung này được bảo mật</h3>
+            <p>Đây là thư mục chứa toàn bộ tài liệu và video gốc. Vui lòng đăng ký để được cấp quyền truy cập.</p>
+            
+            <a href="https://khoahocmall.com/cua-hang/" target="_blank" class="btn-buy">ĐĂNG KÝ KHÓA HỌC</a>
+            
+            <div class="modal-footer">
+                Bạn đã có mật khẩu? <span class="link-pass" onclick="askPassword()">Nhập tại đây</span>
+            </div>
         </div>
     </div>
 
@@ -167,26 +190,22 @@
         const urlParams = new URLSearchParams(window.location.search);
         const courseSlug = urlParams.get('course'); 
         
-        // Biến lưu trữ data
         let courseData = { trial: [], locked: [] };
 
         // --- 3. KHỞI TẠO ---
         window.onload = function() {
             if (!courseSlug) { alert("Thiếu mã khóa học (Slug)!"); return; }
             
-            // TỰ ĐỘNG MỞ KHÓA NẾU ĐÃ NHỚ PASS
+            // Check pass đã lưu
             const savedPass = localStorage.getItem('savedPass_' + courseSlug);
-            
             if (savedPass) {
-                // Nếu có pass lưu, gọi API mở khóa luôn
-                loadData('unlock', savedPass, true); // true = silent mode (không hiện thông báo popup)
+                loadData('unlock', savedPass, true);
             } else {
-                // Nếu chưa có, chỉ load bản học thử
                 loadData('getTrial');
             }
         };
 
-        // --- 4. HÀM TẢI DỮ LIỆU ---
+        // --- 4. TẢI DỮ LIỆU ---
         async function loadData(action, password = '', isSilent = false) {
             try {
                 let url = `${API_URL}?course=${courseSlug}&action=${action}`;
@@ -197,7 +216,6 @@
 
                 if (data.error) {
                     if(!isSilent) alert(data.error); 
-                    // Nếu pass lưu bị sai (do đổi pass mới), xóa localStorage
                     if(action === 'unlock') localStorage.removeItem('savedPass_' + courseSlug);
                     return;
                 }
@@ -205,28 +223,24 @@
                 if (action === 'unlock') {
                     // MỞ KHÓA THÀNH CÔNG
                     if(data.driveLink) {
-                        // 1. Lưu pass vào bộ nhớ trình duyệt
                         localStorage.setItem('savedPass_' + courseSlug, password);
 
-                        // 2. Hiện nút vào Drive, Ẩn nút Unlock
+                        // Đổi giao diện
                         document.getElementById('btnUnlock').style.display = 'none';
                         const btnDrive = document.getElementById('btnDrive');
                         btnDrive.style.display = 'flex';
                         btnDrive.href = data.driveLink;
 
-                        // 3. Thông báo (chỉ hiện nếu người dùng vừa nhập tay)
-                        if(!isSilent) alert("Mật khẩu chính xác! Đã mở khóa quyền truy cập.");
+                        closeModal(); // Đóng popup nếu đang mở
+                        if(!isSilent) alert("Mật khẩu chính xác! Bạn đã có quyền truy cập kho tài liệu.");
                         
-                        // 4. Load lại dữ liệu để cập nhật tên bài (nếu cần thiết)
-                        // Trong logic hiện tại, ta vẫn cần load list bài học để hiện danh sách bên trái
-                        // Gọi lại API getTrial để lấy tên bài (vì API unlock chỉ trả link Redirect)
+                        // Load lại list để cập nhật giao diện (nếu cần)
                         loadData('getTrial', '', true);
                     }
                 } else {
-                    // LOAD DANH SÁCH BÀI HỌC
+                    // LOAD LIST
                     if(data.name) document.getElementById('headerTitle').innerText = data.name;
                     
-                    // Sắp xếp A-Z
                     courseData.trial = sortByName(data.trialItems);
                     courseData.locked = sortByName(data.lockedItems);
                     
@@ -236,7 +250,7 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- 5. HÀM SẮP XẾP A-Z ---
+        // --- 5. HÀM SẮP XẾP ---
         function sortByName(items) {
             if(!items) return [];
             return items.sort((a, b) => a.name.localeCompare(b.name));
@@ -247,9 +261,11 @@
             const sidebar = document.getElementById('sidebar');
             sidebar.innerHTML = '';
 
-            // Render 2 nhóm
+            // Nhóm 1: Học Thử
             createGroup(sidebar, "1. Học Thử (Miễn Phí)", courseData.trial, true, false);
-            createGroup(sidebar, "2. Nội Dung Chính (VIP)", courseData.locked, true, true);
+
+            // Nhóm 2: Nội Dung Chính (Icon Folder)
+            createGroup(sidebar, "2. Nội Dung Chính (Full)", courseData.locked, true, true);
         }
 
         function createGroup(container, title, items, isOpen, isLockedGroup) {
@@ -272,17 +288,23 @@
                     const li = document.createElement('li');
                     li.className = `lesson-item ${isLockedGroup ? 'locked' : ''}`;
                     
-                    const icon = isLockedGroup ? '<i class="fas fa-lock" style="color:#ff9800"></i>' : '<i class="far fa-play-circle" style="color:#0066cc"></i>';
+                    // Nếu là khóa chính: Dùng icon Folder vàng + Ổ khóa
+                    // Nếu là học thử: Dùng icon Play xanh
+                    const iconLeft = isLockedGroup 
+                        ? '<i class="fas fa-folder folder-icon"></i>' 
+                        : '<i class="far fa-play-circle" style="color:#0066cc"></i>';
                     
-                    li.innerHTML = `${icon} <span style="flex:1">${item.name}</span>`;
+                    const iconRight = isLockedGroup ? '<i class="fas fa-lock" style="color:#bbb; font-size:12px"></i>' : '';
+
+                    li.innerHTML = `${iconLeft} <span style="flex:1">${item.name}</span> ${iconRight}`;
                     
                     li.onclick = () => {
                         if(isLockedGroup) {
                             showBuyModal();
                         } else {
-                            // Chuyển link download sang link preview cho Iframe
                             const previewLink = convertToPreviewLink(item.link);
-                            playVideo(previewLink, item.name, li);
+                            const originalLink = convertToViewLink(item.link); // Link gốc để xem trên Drive
+                            playVideo(previewLink, originalLink, item.name, li);
                         }
                     };
                     list.appendChild(li);
@@ -293,26 +315,37 @@
             container.appendChild(group);
         }
 
-        // --- 7. HỖ TRỢ STREAM ---
-        function convertToPreviewLink(downloadLink) {
-            // Chuyển link: drive.google.com/uc?export=download&id=XYZ 
-            // Thành: drive.google.com/file/d/XYZ/preview
+        // --- 7. HỖ TRỢ URL ---
+        function convertToPreviewLink(link) {
             try {
-                const idMatch = downloadLink.match(/id=([^&]+)/);
-                if (idMatch && idMatch[1]) {
-                    return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
-                }
-                return downloadLink;
-            } catch (e) { return downloadLink; }
+                const idMatch = link.match(/id=([^&]+)/);
+                if (idMatch && idMatch[1]) return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+                return link;
+            } catch (e) { return link; }
         }
 
-        function playVideo(link, title, element) {
+        function convertToViewLink(link) {
+            try {
+                const idMatch = link.match(/id=([^&]+)/);
+                if (idMatch && idMatch[1]) return `https://drive.google.com/file/d/${idMatch[1]}/view`;
+                return link;
+            } catch (e) { return link; }
+        }
+
+        function playVideo(previewLink, viewLink, title, element) {
             const iframe = document.getElementById('videoPlayer');
             const placeholder = document.getElementById('placeholder');
+            const driveActions = document.getElementById('driveActions');
+            const btnViewOnDrive = document.getElementById('btnViewOnDrive');
             
+            // Hiển thị Video
             placeholder.style.display = 'none';
             iframe.style.display = 'block';
-            iframe.src = link;
+            iframe.src = previewLink;
+
+            // Hiển thị nút "Xem trên Drive"
+            driveActions.style.display = 'flex';
+            btnViewOnDrive.href = viewLink;
 
             document.getElementById('lessonTitle').innerText = title;
             document.getElementById('lessonDesc').innerText = "Đang phát video...";
@@ -321,12 +354,18 @@
             element.classList.add('active');
         }
 
+        // --- 8. MODAL FUNCTIONS ---
         function showBuyModal() { document.getElementById('buyModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('buyModal').style.display = 'none'; }
 
         function askPassword() {
-            const pass = prompt("Nhập mật khẩu để truy cập Kho Tài Liệu Gốc:");
-            if(pass) loadData('unlock', pass);
+            // Đóng modal mua hàng trước khi hiện prompt nhập pass
+            closeModal();
+            // Timeout nhẹ để UI mượt hơn
+            setTimeout(() => {
+                const pass = prompt("Nhập mật khẩu truy cập:");
+                if(pass) loadData('unlock', pass);
+            }, 100);
         }
     </script>
 </body>
