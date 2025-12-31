@@ -9,18 +9,23 @@
     
     <style>
         :root { --header-height: 60px; --sidebar-width: 350px; --primary-color: #0066cc; --active-bg: #e6f2ff; }
+        
+        /* BẢO MẬT: Chặn bôi đen toàn trang */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
         body { font-family: 'Roboto', sans-serif; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
         header { height: var(--header-height); background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; position: relative; }
         .logo { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 10px; }
         .logo i { color: var(--primary-color); font-size: 24px; }
+        
         .header-actions { display: flex; gap: 10px; }
 
         .btn-unlock { background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%); color: #fff; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.3); transition: transform 0.2s; }
         .btn-unlock:hover { transform: scale(1.05); }
 
+        /* Nút Google Drive & OneDrive */
         .btn-platform { color: #fff; padding: 8px 15px; border-radius: 20px; font-weight: bold; text-decoration: none; display: none; align-items: center; gap: 8px; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .btn-drive { background: #28a745; }
         .btn-drive:hover { background: #218838; }
@@ -29,6 +34,8 @@
 
         /* Container */
         .container { display: flex; flex: 1; overflow: hidden; }
+
+        /* SIDEBAR */
         .sidebar { width: var(--sidebar-width); border-right: 1px solid #ddd; display: flex; flex-direction: column; overflow-y: auto; background: #fff; }
         .unit-group { border-bottom: 1px solid #eee; }
         .unit-header { padding: 15px 20px; background: #f8f9fa; cursor: pointer; font-weight: 600; color: #444; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
@@ -40,6 +47,7 @@
         .lesson-item { padding: 12px 20px; border-bottom: 1px solid #f1f1f1; cursor: pointer; display: flex; align-items: center; gap: 10px; background: #fff; transition: 0.2s; font-size: 14px; }
         .lesson-item:hover { background: #f9f9f9; }
         .lesson-item.active { background: var(--active-bg); color: var(--primary-color); border-left: 3px solid var(--primary-color); font-weight: 500; }
+        
         .lesson-item.locked { opacity: 0.8; color: #555; }
         .lesson-item.locked:hover { background: #fff8e1; }
         .lesson-item.unlocked { color: #2e7d32; font-weight: 500; }
@@ -49,28 +57,58 @@
         .main-content { flex: 1; padding: 30px; background: #fff; display: flex; flex-direction: column; align-items: center; position: relative; overflow-y: auto; }
         .video-wrapper { width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); flex-shrink: 0; }
         
+        /* BẢO MẬT: Lớp phủ chặn chuột phải video */
         .video-overlay { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; display: none; }
+        
         iframe { width: 100%; height: 100%; border: none; }
         .placeholder { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; background: #222; text-align: center; }
         .info-area { width: 100%; max-width: 1000px; }
         .info-area h2 { font-size: 24px; margin-bottom: 10px; color: #333; }
 
-        /* NOTES */
-        .video-note { width: 100%; max-width: 1000px; background: #fff8e1; color: #795548; padding: 12px 15px; border-radius: 6px; font-size: 13px; line-height: 1.5; margin-bottom: 10px; border: 1px solid #ffe0b2; text-align: center; }
+        /* MESSAGE NOTES */
+        .video-note {
+            width: 100%; max-width: 1000px;
+            background: #fff8e1; /* Vàng nhạt */
+            color: #795548;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            border: 1px solid #ffe0b2;
+            text-align: center;
+        }
         .video-note i { color: #ff9800; margin-right: 5px; }
-        .email-note { width: 100%; max-width: 1000px; background: #e3f2fd; color: #0d47a1; padding: 12px 15px; border-radius: 6px; font-size: 13px; line-height: 1.5; margin-bottom: 15px; border: 1px solid #bbdefb; text-align: center; }
+
+        .email-note {
+            width: 100%; max-width: 1000px;
+            background: #e3f2fd; /* Xanh dương nhạt */
+            color: #0d47a1;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            border: 1px solid #bbdefb;
+            text-align: center;
+        }
         .email-note i { color: #2196f3; margin-right: 5px; }
         
+        /* Nút Xem trên Drive dưới video */
         .drive-actions { width: 100%; max-width: 1000px; display: none; justify-content: flex-end; margin-bottom: 20px; }
         .btn-view-drive { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #fff; border: 1px solid #ddd; border-radius: 6px; color: #555; font-size: 13px; text-decoration: none; transition: 0.2s; }
         .btn-view-drive:hover { background: #f5f5f5; color: #333; border-color: #ccc; }
         .btn-view-drive i { color: #28a745; }
 
-        /* POPUP */
+        /* POPUP MUA HÀNG */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .modal { background: #fff; padding: 35px; border-radius: 16px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.3); animation: slideDown 0.3s; position: relative; }
         @keyframes slideDown { from {transform: translateY(-20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+        
         .modal i.main-icon { font-size: 50px; color: #ff9800; margin-bottom: 15px; }
+        .modal h3 { margin-bottom: 10px; color: #333; font-size: 20px; }
+        .modal p { color: #666; margin-bottom: 25px; font-size: 14px; line-height: 1.5; }
+        
         .modal-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         .btn-buy { display: flex; justify-content: center; align-items: center; background: #0066cc; color: #fff; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; width: 100%; box-shadow: 0 4px 10px rgba(0, 102, 204, 0.3); transition: 0.2s; }
         .btn-buy:hover { background: #005bb5; }
@@ -274,15 +312,26 @@
                         li.onclick = () => showBuyModal();
                     } 
                     else if (isMainContent && isUnlocked) {
-                        // ĐÃ MỞ KHÓA (SỬA Ở ĐÂY: LUÔN MỞ DRIVE)
+                        // ĐÃ MỞ KHÓA
                         li.className = 'lesson-item unlocked';
                         const icon = item.type === 'folder' ? '<i class="fas fa-folder-open folder-icon" style="color:#2e7d32"></i>' : '<i class="fas fa-file-video" style="color:#2e7d32"></i>';
                         li.innerHTML = `${icon} <span style="flex:1">${item.name}</span> <i class="fas fa-check-circle" style="color:#2e7d32; font-size:12px"></i>`;
                         
                         li.onclick = () => {
-                             // --- LOGIC MỚI: BẤM VÀO LÀ MỞ LINK GỐC TRÊN TAB MỚI ---
-                             // Bất kể là Folder hay Video đều mở tab mới
-                             window.open(item.link || item.driveLink, '_blank');
+                             if(item.type === 'folder') {
+                                 // Folder -> Mở link gốc
+                                 window.open(item.link || item.driveLink, '_blank');
+                             } else {
+                                 // Video -> TẠO LINK VIEW DẠNG ?t=
+                                 const fileId = getFileIdFromLink(item.link || item.driveLink);
+                                 if (fileId) {
+                                     // Mở link chuẩn theo yêu cầu
+                                     window.open(`https://drive.google.com/file/d/${fileId}/view?t=`, '_blank');
+                                 } else {
+                                     // Fallback
+                                     window.open(item.link || item.driveLink, '_blank');
+                                 }
+                             }
                         };
                     } 
                     else {
@@ -295,7 +344,6 @@
                             playVideo(previewLink, viewLink, item.name, li);
                         };
                     }
-                    
                     list.appendChild(li);
                 });
             }
@@ -304,21 +352,27 @@
             container.appendChild(group);
         }
 
-        // Xử lý link stream (dành cho phần học thử)
+        // HÀM LẤY ID FILE TỪ LINK DRIVE (CHO PHẦN ĐÃ MỞ KHÓA)
+        function getFileIdFromLink(link) {
+            try {
+                const idMatch = link.match(/id=([^&]+)/) || link.match(/\/d\/([^\/]+)/);
+                if (idMatch && idMatch[1]) return idMatch[1];
+                return null;
+            } catch (e) { return null; }
+        }
+
+        // HÀM XỬ LÝ LINK PREVIEW (CHO PHẦN HỌC THỬ)
         function convertToPreviewLink(link) { 
             try { 
-                // Facebook
                 if(link.includes("facebook.com") && !link.includes("plugins/video.php")) {
                     return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(link)}&show_text=0&width=560`;
                 }
-                // YouTube
                 if((link.includes("youtube.com") || link.includes("youtu.be")) && !link.includes("embed")) {
                     let videoId = "";
                     if(link.includes("v=")) videoId = link.split("v=")[1].split("&")[0];
                     else if(link.includes("youtu.be/")) videoId = link.split("youtu.be/")[1];
                     if(videoId) return `https://www.youtube.com/embed/${videoId}`;
                 }
-                // Drive (Học thử vẫn stream)
                 const idMatch = link.match(/id=([^&]+)/); 
                 if (idMatch) return `https://drive.google.com/file/d/${idMatch[1]}/preview`; 
                 return link; 
