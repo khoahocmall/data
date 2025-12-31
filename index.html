@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khóa Học Mall - VIP</title>
+    <title>Khóa Học Mall Player</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -65,10 +65,10 @@
         .info-area { width: 100%; max-width: 1000px; }
         .info-area h2 { font-size: 24px; margin-bottom: 10px; color: #333; }
 
-        /* MESSAGE NOTE (MỚI THÊM) */
+        /* MESSAGE NOTE */
         .video-note {
             width: 100%; max-width: 1000px;
-            background: #fff8e1; /* Màu vàng nhạt */
+            background: #fff8e1;
             color: #795548;
             padding: 12px 15px;
             border-radius: 6px;
@@ -143,7 +143,7 @@
             
             <div class="video-note">
                 <i class="fas fa-info-circle"></i>
-                Drive chỉ để dùng lưu trữ video, nếu bị lỗi không phát được bạn hãy tải về để xem hoặc truy cập vào Link OneDrive nhé!<br>
+                Drive chỉ để dùng lưu trự video, nếu bị lỗi không phát được bạn hãy tải về để xem hoặc truy cập vào Link OneDrive nhé!<br>
                 <b>Tất cả nội dung đều mở tải về 100%, cam kết không chặn tải.</b>
             </div>
 
@@ -221,8 +221,8 @@
                     localStorage.setItem('savedPass_' + courseSlug, password);
                     isUnlocked = true;
 
+                    // 1. Ẩn/Hiện nút Header
                     document.getElementById('btnUnlock').style.display = 'none';
-                    
                     const btnDrive = document.getElementById('btnDrive');
                     btnDrive.style.display = 'flex';
                     btnDrive.href = data.driveLink;
@@ -233,17 +233,31 @@
                         btnOneDrive.href = data.oneDriveLink;
                     }
 
+                    // 2. Cập nhật Main Content (Đã mở khóa)
                     courseData.locked = sortByName(data.mainItems);
-                    renderSidebar();
-                    closeModal();
 
+                    // 3. QUAN TRỌNG: Kiểm tra xem Trial đã có dữ liệu chưa.
+                    // Nếu chưa (do reload trang), thì gọi API lấy Trial ngay lập tức.
+                    if (courseData.trial.length === 0) {
+                        loadData('getTrial', '', true);
+                    } else {
+                        renderSidebar(); // Nếu đã có Trial rồi thì render luôn
+                    }
+
+                    closeModal();
                     if(!isSilent) alert("Mở khóa thành công!");
 
                 } else {
-                    // LOAD BAN ĐẦU
+                    // LOAD HỌC THỬ (Hoặc khi API getTrial trả về)
                     if(data.name) document.getElementById('headerTitle').innerText = data.name;
                     courseData.trial = sortByName(data.trialItems);
-                    courseData.locked = sortByName(data.lockedItems);
+                    
+                    // CHỐT KIỂM TRA: Nếu đã mở khóa rồi, thì KHÔNG được ghi đè danh sách locked
+                    // bằng danh sách "xem trước" của API getTrial
+                    if (!isUnlocked) {
+                        courseData.locked = sortByName(data.lockedItems);
+                    }
+                    
                     renderSidebar();
                 }
             } catch (e) { console.error(e); }
@@ -352,4 +366,3 @@
     </script>
 </body>
 </html>
-
