@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khóa Học Mall Player</title>
+    <title>Khóa Học Mall</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -188,7 +188,7 @@
         }
         document.ondragstart = function() { return false; };
 
-        // --- CẤU HÌNH API MỚI (Đã cập nhật theo yêu cầu) ---
+        // --- CẤU HÌNH API ---
         const API_URL = "https://script.google.com/macros/s/AKfycbznSVj39gx0sP92P8FHKeesigC0iQiCQoa3_o1NMkG9QaBFxeSciVkY2_G29huiQjIh5A/exec"; 
         
         const urlParams = new URLSearchParams(window.location.search);
@@ -200,27 +200,10 @@
         window.onload = function() {
             if (!courseSlug) { alert("Thiếu mã khóa học (Slug)!"); return; }
             
-            // Logic 1: Check Cache (Hiện dữ liệu cũ cho nhanh)
-            const cachedInfo = localStorage.getItem('cacheInfo_' + courseSlug);
-            if (cachedInfo) {
-                try {
-                    const parsedInfo = JSON.parse(cachedInfo);
-                    if (parsedInfo.isFree || parsedInfo.savedPass) {
-                        isUnlocked = true;
-                        updateUnlockedUI(parsedInfo.driveLink, parsedInfo.oneDriveLink);
-                    }
-                    if (parsedInfo.name) document.getElementById('headerTitle').innerText = parsedInfo.name;
-                    
-                    const cachedData = localStorage.getItem('cacheData_' + courseSlug);
-                    if (cachedData) {
-                        courseData = JSON.parse(cachedData);
-                        renderSidebar();
-                    }
-                } catch(e) {}
-            }
-
-            // Logic 2: Gọi API cập nhật (Có savedPass thì gửi luôn)
+            // Check cache pass
             const savedPass = localStorage.getItem('savedPass_' + courseSlug);
+            
+            // Nếu có savedPass, gọi unlock luôn
             if (savedPass) { 
                 loadData('unlock', savedPass, true); 
             } else { 
@@ -241,75 +224,68 @@
                     return;
                 }
 
-                // Caching info
-                const cacheInfo = {
-                    name: data.name,
-                    isFree: data.isFree,
-                    driveLink: data.driveLink,
-                    oneDriveLink: data.oneDriveLink,
-                    savedPass: action === 'unlock' ? password : null
-                };
-                localStorage.setItem('cacheInfo_' + courseSlug, JSON.stringify(cacheInfo));
-
                 // CASE 1: MỞ KHÓA THÀNH CÔNG (HOẶC MIỄN PHÍ)
                 if (action === 'unlock' || data.isFree) {
                     isUnlocked = true;
                     if (action === 'unlock') localStorage.setItem('savedPass_' + courseSlug, password);
 
                     // Update UI Header
-                    updateUnlockedUI(data.driveLink, data.oneDriveLink);
+                    document.getElementById('btnUnlock').style.display = 'none';
+                    const btnDrive = document.getElementById('btnDrive');
+                    btnDrive.style.display = 'flex';
+                    btnDrive.href = data.driveLink;
+
+                    const btnOneDrive = document.getElementById('btnOneDrive');
+                    if(data.oneDriveLink && data.oneDriveLink.trim() !== "") {
+                        btnOneDrive.style.display = 'flex';
+                        btnOneDrive.href = data.oneDriveLink;
+                    }
+
                     closeModal();
 
                     if (action === 'unlock') {
-                         courseData.locked = sortByName(data.mainItems);
+                         courseData.locked = sortVideosFirst(data.mainItems); // Sắp xếp Video trước
                          if(!isSilent) alert("Mở khóa thành công!");
-                         // Nếu trial chưa có (do F5), tải lại
                          if(courseData.trial.length === 0) loadData('getTrial', '', true);
                     } else {
                          // Free Mode
                          if(data.name) document.getElementById('headerTitle').innerText = data.name;
-                         courseData.trial = sortByName(data.trialItems);
-                         courseData.locked = sortByName(data.lockedItems);
+                         courseData.trial = sortVideosFirst(data.trialItems);
+                         courseData.locked = sortVideosFirst(data.lockedItems);
                          renderSidebar();
                     }
                     
                     if(action === 'unlock') renderSidebar();
 
                 } else {
-                    // CASE 2: CHƯA MỞ KHÓA (PREVIEW)
+                    // CASE 2: CHƯA MỞ KHÓA
                     if(data.name) document.getElementById('headerTitle').innerText = data.name;
-                    courseData.trial = sortByName(data.trialItems);
+                    courseData.trial = sortVideosFirst(data.trialItems);
                     
-                    // Chỉ cập nhật locked list nếu chưa mở khóa (tránh ghi đè khi F5)
                     if (!isUnlocked) {
-                        courseData.locked = sortByName(data.lockedItems);
+                        courseData.locked = sortVideosFirst(data.lockedItems);
                     }
                     renderSidebar();
                 }
-                
-                // Save data cache
-                localStorage.setItem('cacheData_' + courseSlug, JSON.stringify(courseData));
-
             } catch (e) { console.error(e); }
         }
 
-        function updateUnlockedUI(driveLink, oneDriveLink) {
-            document.getElementById('btnUnlock').style.display = 'none';
-            
-            const btnDrive = document.getElementById('btnDrive');
-            btnDrive.style.display = 'flex';
-            btnDrive.href = driveLink;
-
-            const btnOneDrive = document.getElementById('btnOneDrive');
-            if(oneDriveLink && oneDriveLink.trim() !== "") {
-                btnOneDrive.style.display = 'flex';
-                btnOneDrive.href = oneDriveLink;
-            }
-        }
-
-        function sortByName(items) {
+        // --- HÀM SẮP XẾP MỚI (Video -> File Khác) ---
+        function sortVideosFirst(items) {
             if(!items) return [];
-            return items.sort((a, b) => a.name.localeCompare(b.name));
+            return items.sort((a, b) => {
+                // Ưu tiên Video lên trước (type === 'video')
+                const aIsVideo = (a.type === 'video');
+                const bIsVideo = (b.type === 'video');
+
+                // Nếu a là video mà b không phải -> a xếp trước (-1)
+                if (aIsVideo && !bIsVideo) return -1;
+                // Nếu b là video mà a không phải -> b xếp trước (1)
+                if (!aIsVideo && bIsVideo) return 1;
+
+                // Nếu cùng loại thì xếp theo tên A-Z (có hỗ trợ số 1, 2, 10...)
+                return a.name.localeCompare(b.name, 'vi', { numeric: true });
+            });
         }
 
         function renderSidebar() {
@@ -333,7 +309,7 @@
             list.className = 'lesson-list';
 
             if(!items || items.length === 0) {
-                list.innerHTML = "<li style='padding:15px;color:#999;font-size:13px'>Đang cập nhật...</li>";
+                list.innerHTML = "<li style='padding:15px;color:#999;font-size:13px'>Chưa cập nhật...</li>";
             } else {
                 items.forEach(item => {
                     const li = document.createElement('li');
@@ -412,4 +388,3 @@
     </script>
 </body>
 </html>
-
