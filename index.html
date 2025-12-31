@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khóa Học Mall Player</title>
+    <title>Khóa Học Mall - VIP</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -25,7 +25,7 @@
         .btn-unlock { background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%); color: #fff; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.3); transition: transform 0.2s; }
         .btn-unlock:hover { transform: scale(1.05); }
 
-        /* Nút Google Drive & OneDrive (Hiện sau khi mở khóa) */
+        /* Nút Google Drive & OneDrive */
         .btn-platform { color: #fff; padding: 8px 15px; border-radius: 20px; font-weight: bold; text-decoration: none; display: none; align-items: center; gap: 8px; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .btn-drive { background: #28a745; }
         .btn-drive:hover { background: #218838; }
@@ -55,15 +55,30 @@
 
         /* MAIN CONTENT */
         .main-content { flex: 1; padding: 30px; background: #fff; display: flex; flex-direction: column; align-items: center; position: relative; }
-        .video-wrapper { width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .video-wrapper { width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         
-        /* BẢO MẬT: Lớp phủ trong suốt đè lên iframe để chặn click chuột phải vào video */
+        /* BẢO MẬT: Lớp phủ chặn chuột phải video */
         .video-overlay { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; display: none; }
         
         iframe { width: 100%; height: 100%; border: none; }
         .placeholder { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; background: #222; text-align: center; }
         .info-area { width: 100%; max-width: 1000px; }
         .info-area h2 { font-size: 24px; margin-bottom: 10px; color: #333; }
+
+        /* MESSAGE NOTE (MỚI THÊM) */
+        .video-note {
+            width: 100%; max-width: 1000px;
+            background: #fff8e1; /* Màu vàng nhạt */
+            color: #795548;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            border: 1px solid #ffe0b2;
+            text-align: center;
+        }
+        .video-note i { color: #ff9800; margin-right: 5px; }
         
         /* Nút Xem trên Drive dưới video */
         .drive-actions { width: 100%; max-width: 1000px; display: none; justify-content: flex-end; margin-bottom: 20px; }
@@ -126,6 +141,12 @@
                 <div class="placeholder" id="placeholder"><i class="fas fa-play-circle" style="font-size: 50px; margin-bottom: 15px;"></i><p>Chọn video để bắt đầu</p></div>
             </div>
             
+            <div class="video-note">
+                <i class="fas fa-info-circle"></i>
+                Drive chỉ để dùng lưu trự video, nếu bị lỗi không phát được bạn hãy tải về để xem hoặc truy cập vào Link OneDrive nhé!<br>
+                <b>Tất cả nội dung đều mở tải về 100%, cam kết không chặn tải.</b>
+            </div>
+
             <div class="drive-actions" id="driveActions">
                 <a href="#" target="_blank" class="btn-view-drive" id="btnViewOnDrive"><i class="fab fa-google-drive"></i> Xem trên Drive</a>
             </div>
@@ -156,23 +177,18 @@
     </div>
 
     <script>
-        // --- 1. CÁC TÍNH NĂNG BẢO MẬT NÂNG CAO ---
-        // Chặn chuột phải
+        // --- 1. TÍNH NĂNG BẢO MẬT ---
         document.addEventListener('contextmenu', e => e.preventDefault());
-        
-        // Chặn phím tắt (F12, Ctrl+U, Ctrl+S, Ctrl+P, Ctrl+Shift+I/J/C)
         document.onkeydown = function(e) {
-            if(e.keyCode == 123) return false; // F12
+            if(e.keyCode == 123) return false; 
             if(e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) return false;
-            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // View Source
-            if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false; // Save
-            if(e.ctrlKey && e.keyCode == 'P'.charCodeAt(0)) return false; // Print
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
+            if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false; 
+            if(e.ctrlKey && e.keyCode == 'P'.charCodeAt(0)) return false; 
         }
-        
-        // Chặn kéo thả
         document.ondragstart = function() { return false; };
 
-        // --- CẤU HÌNH API MỚI ---
+        // --- CẤU HÌNH API ---
         const API_URL = "https://script.google.com/macros/s/AKfycbxxRXT-2MMbglPfZgzyTF7PSd2AhZAjInI233sOoc_VXxLqAm0TD7JA_AOPLkvAh96-vw/exec"; 
         
         const urlParams = new URLSearchParams(window.location.search);
@@ -205,22 +221,18 @@
                     localStorage.setItem('savedPass_' + courseSlug, password);
                     isUnlocked = true;
 
-                    // 1. Ẩn nút Unlock
                     document.getElementById('btnUnlock').style.display = 'none';
                     
-                    // 2. Hiện nút Google Drive
                     const btnDrive = document.getElementById('btnDrive');
                     btnDrive.style.display = 'flex';
                     btnDrive.href = data.driveLink;
 
-                    // 3. Hiện nút OneDrive (Nếu có)
                     const btnOneDrive = document.getElementById('btnOneDrive');
                     if(data.oneDriveLink && data.oneDriveLink.trim() !== "") {
                         btnOneDrive.style.display = 'flex';
                         btnOneDrive.href = data.oneDriveLink;
                     }
 
-                    // 4. Cập nhật data
                     courseData.locked = sortByName(data.mainItems);
                     renderSidebar();
                     closeModal();
@@ -228,7 +240,7 @@
                     if(!isSilent) alert("Mở khóa thành công!");
 
                 } else {
-                    // LOAD DATA BAN ĐẦU
+                    // LOAD BAN ĐẦU
                     if(data.name) document.getElementById('headerTitle').innerText = data.name;
                     courseData.trial = sortByName(data.trialItems);
                     courseData.locked = sortByName(data.lockedItems);
@@ -281,21 +293,18 @@
                         const icon = item.type === 'folder' ? '<i class="fas fa-folder-open folder-icon" style="color:#2e7d32"></i>' : '<i class="fas fa-file-video" style="color:#2e7d32"></i>';
                         li.innerHTML = `${icon} <span style="flex:1">${item.name}</span> <i class="fas fa-check-circle" style="color:#2e7d32; font-size:12px"></i>`;
                         
-                        // LOGIC CLICK SAU KHI MỞ KHÓA
                         li.onclick = () => {
                              if(item.type === 'folder') {
-                                 // Nếu là Folder -> Mở tab mới tới Drive
                                  window.open(item.link || item.driveLink, '_blank');
                              } else {
-                                 // Nếu là Video -> Stream trực tiếp (giống học thử)
                                  const previewLink = convertToPreviewLink(item.link);
-                                 const viewLink = item.driveLink; // Link xem gốc
+                                 const viewLink = item.driveLink;
                                  playVideo(previewLink, viewLink, item.name, li);
                              }
                         };
                     } 
                     else {
-                        // HỌC THỬ (Luôn Stream)
+                        // HỌC THỬ
                         li.className = 'lesson-item';
                         li.innerHTML = `<i class="far fa-play-circle" style="color:#0066cc"></i> <span style="flex:1">${item.name}</span>`;
                         li.onclick = () => {
