@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Khóa Học Mall Player</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -11,12 +11,12 @@
         :root { --header-height: 60px; --sidebar-width: 350px; --primary-color: #0066cc; --active-bg: #e6f2ff; }
         
         /* BẢO MẬT: Chặn bôi đen toàn trang */
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
         
         body { font-family: 'Roboto', sans-serif; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
-        header { height: var(--header-height); background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; }
+        header { height: var(--header-height); background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; position: relative; }
         .logo { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 10px; }
         .logo i { color: var(--primary-color); font-size: 24px; }
         
@@ -54,8 +54,8 @@
         .folder-icon { color: #fbc02d; font-size: 16px; } 
 
         /* MAIN CONTENT */
-        .main-content { flex: 1; padding: 30px; background: #fff; display: flex; flex-direction: column; align-items: center; position: relative; }
-        .video-wrapper { width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .main-content { flex: 1; padding: 30px; background: #fff; display: flex; flex-direction: column; align-items: center; position: relative; overflow-y: auto; }
+        .video-wrapper { width: 100%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); flex-shrink: 0; }
         
         /* BẢO MẬT: Lớp phủ chặn chuột phải video */
         .video-overlay { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; display: none; }
@@ -80,7 +80,7 @@
         }
         .video-note i { color: #ff9800; margin-right: 5px; }
 
-        /* MESSAGE NOTE 2 (EMAIL) - MỚI THÊM */
+        /* MESSAGE NOTE 2 (EMAIL) */
         .email-note {
             width: 100%; max-width: 1000px;
             background: #e3f2fd; /* Xanh dương nhạt */
@@ -118,10 +118,41 @@
         .btn-close { position: absolute; top: 15px; right: 15px; color: #aaa; cursor: pointer; font-size: 24px; width: 30px; height: 30px; line-height: 30px; }
         .btn-close:hover { color: #555; }
 
+        /* --- MOBILE RESPONSIVE (ĐÃ TỐI ƯU) --- */
         @media (max-width: 900px) {
-            .container { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; max-height: 400px; order: 2; border-right: none; border-top: 1px solid #ddd; }
-            .main-content { order: 1; padding: 15px; }
+            /* 1. Cho phép body cuộn tự nhiên, không bị fixed 100vh */
+            body { height: auto; overflow-y: auto; }
+            
+            /* 2. Header nhỏ gọn hơn */
+            header { padding: 0 10px; }
+            .logo span { display: none; } /* Ẩn chữ Logo để tiết kiệm chỗ */
+            
+            /* 3. Layout dạng cột dọc */
+            .container { flex-direction: column; height: auto; overflow: visible; }
+            
+            /* 4. Nội dung chính (Video) lên đầu */
+            .main-content { 
+                order: 1; 
+                padding: 10px; 
+                overflow: visible;
+                display: block; /* Đảm bảo content không bị co */
+            }
+            
+            /* 5. Sidebar (Playlist) xuống dưới và mở rộng full chiều cao */
+            .sidebar { 
+                width: 100%; 
+                height: auto; 
+                max-height: none; /* Bỏ giới hạn chiều cao để hiện hết danh sách */
+                order: 2; 
+                border-right: none; 
+                border-top: 5px solid #e6e6e6; /* Phân cách rõ ràng */
+                overflow: visible;
+            }
+            
+            /* 6. Tăng kích thước vùng bấm cho ngón tay */
+            .lesson-item { padding: 15px 10px; border-bottom: 1px solid #eee; }
+            
+            /* Ẩn chữ trên nút header như cũ */
             .btn-unlock span, .btn-platform span { display: none; }
         }
     </style>
@@ -345,8 +376,10 @@
                         
                         li.onclick = () => {
                              if(item.type === 'folder') {
+                                 // Folder -> Mở tab mới
                                  window.open(item.link || item.driveLink, '_blank');
                              } else {
+                                 // Video -> Stream
                                  const previewLink = convertToPreviewLink(item.link);
                                  const viewLink = item.driveLink;
                                  playVideo(previewLink, viewLink, item.name, li);
@@ -402,4 +435,3 @@
     </script>
 </body>
 </html>
-
