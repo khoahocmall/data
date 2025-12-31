@@ -9,7 +9,10 @@
     
     <style>
         :root { --header-height: 60px; --sidebar-width: 350px; --primary-color: #0066cc; --active-bg: #e6f2ff; }
+        
+        /* BẢO MẬT: Chặn bôi đen toàn trang */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
         body { font-family: 'Roboto', sans-serif; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
@@ -52,12 +55,9 @@
         
         .video-overlay { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 10; display: none; }
         
-        /* IFRAME (Dùng cho Youtube/FB) */
+        /* CHỈ DÙNG IFRAME ĐỂ ĐẢM BẢO ỔN ĐỊNH */
         iframe { width: 100%; height: 100%; border: none; display: none; }
         
-        /* VIDEO TAG (Dùng cho Drive - MỚI) */
-        video { width: 100%; height: 100%; object-fit: contain; display: none; }
-
         .placeholder { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; background: #222; text-align: center; }
         .info-area { width: 100%; max-width: 1000px; }
         .info-area h2 { font-size: 24px; margin-bottom: 10px; color: #333; }
@@ -116,9 +116,6 @@
         <div class="main-content">
             <div class="video-wrapper">
                 <iframe id="videoIframe" src="" allowfullscreen></iframe>
-                
-                <video id="html5Player" controls playsinline controlsList="nodownload"></video>
-                
                 <div class="video-overlay"></div>
                 <div class="placeholder" id="placeholder"><i class="fas fa-play-circle" style="font-size: 50px; margin-bottom: 15px;"></i><p>Chọn video để bắt đầu</p></div>
             </div>
@@ -289,9 +286,10 @@
                         li.onclick = () => {
                              if(item.type === 'folder') { window.open(item.link || item.driveLink, '_blank'); }
                              else { 
-                                 const playableLink = getPlayableLink(item.link);
+                                 // SỬA LỖI PHÁT: Luôn dùng Preview Link (Iframe)
+                                 const previewLink = convertToPreviewLink(item.link); 
                                  const viewLink = item.driveLink || item.link;
-                                 playVideo(playableLink, viewLink, item.name, li);
+                                 playVideo(previewLink, viewLink, item.name, li);
                              }
                         };
                     } 
@@ -299,9 +297,9 @@
                         li.className = 'lesson-item';
                         li.innerHTML = `<i class="far fa-play-circle" style="color:#0066cc"></i> <span style="flex:1">${item.name}</span>`;
                         li.onclick = () => {
-                            const playableLink = getPlayableLink(item.link);
+                            const previewLink = convertToPreviewLink(item.link);
                             const viewLink = item.driveLink || item.link;
-                            playVideo(playableLink, viewLink, item.name, li);
+                            playVideo(previewLink, viewLink, item.name, li);
                         };
                     }
                     list.appendChild(li);
@@ -312,13 +310,18 @@
             container.appendChild(group);
         }
 
-        // --- XỬ LÝ LINK THÔNG MINH ---
-        function getPlayableLink(link) { 
+        // HÀM XỬ LÝ LINK CHUẨN (IFRAME PREVIEW)
+        function convertToPreviewLink(link) { 
             try { 
-                // 1. Nếu là Google Drive -> Trả về link download để Stream trực tiếp (Nhanh)
+                // 1. Google Drive -> Convert về Preview
                 if(link.includes("drive.google.com")) {
-                    const idMatch = link.match(/id=([^&]+)/); 
-                    if (idMatch) return `https://drive.google.com/uc?export=download&id=${idMatch[1]}`;
+                    // Nếu là link download -> chuyển về preview
+                    if(link.includes("export=download")) {
+                        return link.replace("export=download", "").replace("&id=", "/file/d/") + "/preview";
+                    }
+                    // Nếu là link view -> chuyển về preview
+                    const idMatch = link.match(/id=([^&]+)/) || link.match(/\/d\/([^\/]+)/);
+                    if (idMatch) return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
                 }
                 
                 // 2. Facebook
@@ -340,31 +343,19 @@
 
         function playVideo(link, viewLink, title, element) {
             const iframe = document.getElementById('videoIframe');
-            const videoTag = document.getElementById('html5Player');
             const placeholder = document.getElementById('placeholder');
             const driveActions = document.getElementById('driveActions');
             const btnViewOnDrive = document.getElementById('btnViewOnDrive');
             
             placeholder.style.display = 'none';
+            iframe.style.display = 'block';
+            iframe.src = link;
 
-            // Reset
-            iframe.src = ""; iframe.style.display = 'none';
-            videoTag.pause(); videoTag.src = ""; videoTag.style.display = 'none';
-
-            // Kiểm tra loại Link
-            if (link.includes("drive.google.com/uc?export=download")) {
-                // -> DRIVE: Dùng thẻ Video (Nhanh)
-                videoTag.style.display = 'block';
-                videoTag.src = link;
-                videoTag.play().catch(e => console.log("Auto-play blocked"));
-                
+            // Hiện nút View on Drive nếu là link Drive
+            if(link.includes("drive.google.com")) {
                 driveActions.style.display = 'flex';
                 btnViewOnDrive.href = viewLink;
             } else {
-                // -> FB/YOUTUBE: Dùng Iframe
-                iframe.style.display = 'block';
-                iframe.src = link;
-                
                 driveActions.style.display = 'none';
             }
 
