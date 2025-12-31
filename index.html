@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khóa Học Mall</title>
+    <title>Khóa Học Mall Player</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -65,20 +65,35 @@
         .info-area { width: 100%; max-width: 1000px; }
         .info-area h2 { font-size: 24px; margin-bottom: 10px; color: #333; }
 
-        /* MESSAGE NOTE */
+        /* MESSAGE NOTE 1 (DRIVE) */
         .video-note {
             width: 100%; max-width: 1000px;
-            background: #fff8e1;
+            background: #fff8e1; /* Vàng nhạt */
             color: #795548;
             padding: 12px 15px;
             border-radius: 6px;
             font-size: 13px;
             line-height: 1.5;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             border: 1px solid #ffe0b2;
             text-align: center;
         }
         .video-note i { color: #ff9800; margin-right: 5px; }
+
+        /* MESSAGE NOTE 2 (EMAIL) - MỚI THÊM */
+        .email-note {
+            width: 100%; max-width: 1000px;
+            background: #e3f2fd; /* Xanh dương nhạt */
+            color: #0d47a1;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            border: 1px solid #bbdefb;
+            text-align: center;
+        }
+        .email-note i { color: #2196f3; margin-right: 5px; }
         
         /* Nút Xem trên Drive dưới video */
         .drive-actions { width: 100%; max-width: 1000px; display: none; justify-content: flex-end; margin-bottom: 20px; }
@@ -145,6 +160,13 @@
                 <i class="fas fa-info-circle"></i>
                 Drive chỉ để dùng lưu trữ video, nếu bị lỗi không phát được bạn hãy tải về để xem hoặc truy cập vào Link OneDrive nhé!<br>
                 <b>Tất cả nội dung đều mở tải về 100%, cam kết không chặn tải.</b>
+            </div>
+
+            <div class="email-note">
+                <i class="fas fa-envelope-open-text"></i>
+                Link khóa học này đã được gửi qua Email của bạn, để tìm lại khóa cứ vào Email sẽ thấy!<br>
+                Truy cập <b>Email</b> tìm khóa ở <b>Hộp thư chính</b>.<br>
+                Nếu không thấy, hãy kiểm tra mục <b>Quảng Cáo</b> và <b>Spam</b>.
             </div>
 
             <div class="drive-actions" id="driveActions">
@@ -274,16 +296,10 @@
         function sortVideosFirst(items) {
             if(!items) return [];
             return items.sort((a, b) => {
-                // Ưu tiên Video lên trước (type === 'video')
                 const aIsVideo = (a.type === 'video');
                 const bIsVideo = (b.type === 'video');
-
-                // Nếu a là video mà b không phải -> a xếp trước (-1)
                 if (aIsVideo && !bIsVideo) return -1;
-                // Nếu b là video mà a không phải -> b xếp trước (1)
                 if (!aIsVideo && bIsVideo) return 1;
-
-                // Nếu cùng loại thì xếp theo tên A-Z (có hỗ trợ số 1, 2, 10...)
                 return a.name.localeCompare(b.name, 'vi', { numeric: true });
             });
         }
@@ -329,10 +345,8 @@
                         
                         li.onclick = () => {
                              if(item.type === 'folder') {
-                                 // Folder -> Mở tab mới
                                  window.open(item.link || item.driveLink, '_blank');
                              } else {
-                                 // Video -> Stream
                                  const previewLink = convertToPreviewLink(item.link);
                                  const viewLink = item.driveLink;
                                  playVideo(previewLink, viewLink, item.name, li);
